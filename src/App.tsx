@@ -1,6 +1,7 @@
 import { ButtonGroup, Button, Container } from "@mui/material";
 import CardStack from "./components/CardStack";
 import Fire from "./components/Fire";
+import RandomText from "./components/RandomText";
 import Fps from "./components/Fps";
 import { useEffect, useState } from "react";
 import * as PIXI from "pixi.js";
@@ -12,7 +13,7 @@ type SCENES = "cards" | "text" | "particles";
 
 function App() {
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [scene, setScene] = useState<SCENES>("particles");
+  const [scene, setScene] = useState<SCENES>("cards");
 
   gsap.registerPlugin(PixiPlugin);
   PixiPlugin.registerPIXI(PIXI);
@@ -43,6 +44,11 @@ function App() {
           width={size.width}
           height={size.height}
           start={scene === "particles"}
+        />
+        <RandomText
+          width={size.width}
+          height={size.height}
+          start={scene === "text"}
         />
         <Fps />
       </Stage>

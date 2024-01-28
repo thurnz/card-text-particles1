@@ -19,7 +19,10 @@ const reducer = (states: FlameProps[], action: any) => {
       scale: fp.alpha <= 0 ? 0.25 + Math.random() * 1 : fp.scale,
       y: fp.alpha <= 0 ? fp.height : fp.y - 15 * fp.scale,
       x: fp.alpha <= 0 ? Math.random() * fp.width : fp.x,
-      alpha: fp.alpha <= 0 ? Math.random() * 0.5 + 0.5 : Math.max(0, fp.alpha - 0.02),
+      alpha:
+        fp.alpha <= 0
+          ? Math.random() * 0.5 + 0.5
+          : Math.max(0, fp.alpha - 0.02),
       width: action.width,
       height: action.height,
     };
@@ -27,7 +30,7 @@ const reducer = (states: FlameProps[], action: any) => {
 };
 
 const Fire = ({ width, height, start }: CardStackProps) => {
-  const pcRef = useRef<any | null>(null);
+  const conRef = useRef<any | null>(null);
 
   const setInitialState = () => {
     const initialState: FlameProps[] = [];
@@ -52,23 +55,24 @@ const Fire = ({ width, height, start }: CardStackProps) => {
   const [flames, dispatch] = useReducer(reducer, setInitialState());
 
   useEffect(() => {
-    if (!pcRef.current) return;
-    pcRef.current.visible = start;
+    if (!conRef.current) return;
+    conRef.current.visible = start;
   }, [start]);
 
   useTick(() => {
-    if(!start) return;
-    dispatch({ type: 'update', width, height });
+    if (!start) return;
+    dispatch({ type: "update", width, height });
   });
 
   return (
-    <ParticleContainer ref={pcRef} maxSize={10}>
-      {flames.map((flame: FlameProps) => (
+    <ParticleContainer ref={conRef} maxSize={10}>
+      {flames.map((flame: FlameProps, index: number) => (
         <Sprite
+          key={index}
           image={"/images/fire1.png"}
           x={flame.x}
           y={flame.y}
-          anchor={{x: 0.5, y: 0}}
+          anchor={{ x: 0.5, y: 0 }}
           scale={flame.scale}
           alpha={flame.alpha}
         />

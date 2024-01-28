@@ -16,7 +16,7 @@ const CARD = {
 };
 
 const CardStack = ({ width, height, start }: CardStackProps) => {
-  const cardsRef = useRef<any | null>(null);
+  const conRef = useRef<any | null>(null);
 
   const getCards = () => {
     const cards = [];
@@ -29,8 +29,8 @@ const CardStack = ({ width, height, start }: CardStackProps) => {
   };
 
   useEffect(() => {
-    if (!cardsRef.current) return;
-    const cards = cardsRef.current.children;
+    if (!conRef.current) return;
+    const cards = conRef.current.children;
 
     const shuffle = () => {
       const d = (width - CARD.WIDTH) / cards.length;
@@ -42,7 +42,7 @@ const CardStack = ({ width, height, start }: CardStackProps) => {
           duration: 2,
           y: height - 200,
           onStart: () => {
-            cardsRef.current.addChild(card);
+            conRef.current.addChild(card);
           },
         });
       });
@@ -54,14 +54,14 @@ const CardStack = ({ width, height, start }: CardStackProps) => {
       gsap.killTweensOf(cards);
     }
 
-    cardsRef.current.visible = start;
+    conRef.current.visible = start;
 
     return () => {
       gsap.killTweensOf(cards);
     };
   }, [start, height, width]);
 
-  return <Container ref={cardsRef}>{getCards()}</Container>;
+  return <Container ref={conRef}>{getCards()}</Container>;
 };
 
 export default CardStack;
