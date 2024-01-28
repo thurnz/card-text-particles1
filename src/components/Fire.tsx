@@ -1,79 +1,80 @@
-import { PixiComponent, applyDefaultProps } from "@pixi/react";
+import { Sprite, ParticleContainer, useTick } from "@pixi/react";
 import { CardStackProps } from "./CardStack";
-import { Container } from "pixi.js";
-//import * as particles from "@pixi/particle-emitter";
+import { useEffect, useRef } from "react";
+import { useReducer } from "react";
 
-/*const emitterConfig = {
-  lifetime: { min: 0.1, max: 3 },
-  frequency: 1,
-  spawnChance: 1,
-  particlesPerWave: 1,
-  emitterLifetime: 120,
-  maxParticles: 10,
-  pos: { x: 327, y: 200 },
-  autoUpdate: true,
-  behaviors: [
-    {
-      type: "spawnShape",
-      config: { type: "torus", data: { x: 0, y: 0, radius: 100 } },
-    },
-    { type: "textureSingle", config: { texture: Texture.WHITE } },
-  ],
-};*/
+type FlameProps = {
+  alpha: number;
+  scale: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
-/*const Emitter = PixiComponent("Emitter", {
-  create() {
-    return new PIXI.Container();
-  },
-  applyProps(instance, oldProps, newProps) {
-    const { image, config } = newProps;
+const reducer = (states: FlameProps[], action: any) => {
+  return states.map((fp: FlameProps, index: number) => {
+    return {
+      ...fp,
+      scale: fp.alpha <= 0 ? 0.25 + Math.random() * 1 : fp.scale,
+      y: fp.alpha <= 0 ? fp.height : fp.y - 15 * fp.scale,
+      x: fp.alpha <= 0 ? Math.random() * fp.width : fp.x,
+      alpha: fp.alpha <= 0 ? Math.random() * 0.5 + 0.5 : Math.max(0, fp.alpha - 0.02),
+      width: action.width,
+      height: action.height,
+    };
+  });
+};
 
-    if (!this._emitter) {
-      this._emitter = new PIXI.particles.Emitter(
-        instance,
-        [PIXI.Texture.from(image)],
-        config
-      );
+const Fire = ({ width, height, start }: CardStackProps) => {
+  const pcRef = useRef<any | null>(null);
 
-      let elapsed = Date.now();
-
-      const t = () => {
-        this._emitter.raf = requestAnimationFrame(t);
-        const now = Date.now();
-
-        this._emitter.update((now - elapsed) * 0.001);
-
-        elapsed = now;
+  const setInitialState = () => {
+    const initialState: FlameProps[] = [];
+    const w = 1920;
+    const h = 1080;
+    for (let i = 0; i < 10; i++) {
+      const flameProps: FlameProps = {
+        alpha: Math.random() * 0.5 + 0.5,
+        scale: 0.25 + Math.random() * 0.25,
+        x: Math.random() * w,
+        y: h + Math.random() * 200 - 100,
+        width: w,
+        height: h,
       };
-
-      this._emitter.emit = true;
-      t();
+      initialState.push(flameProps);
     }
-  },
-  willUnmount() {
-    if (this._emitter) {
-      this._emitter.emit = false;
-      cancelAnimationFrame(this._emitter.raf);
-    }
-  }
-});*/
+    return initialState;
+  };
 
-const Fire = ({ width, height }: CardStackProps) => {
-  const Emitter: any = PixiComponent("Emitter", {
-    config: {
-      destroy: true,
-      destroyChildren: true,
-    },
-    create: () => {
-      return new Container;
-    },
-    applyProps: (instance, oldProps, newProps) => {
-      applyDefaultProps(instance, oldProps, newProps);
-    },
-    willUnmount() {},
+  setInitialState();
+
+  const [flames, dispatch] = useReducer(reducer, setInitialState());
+
+  useEffect(() => {
+    if (!pcRef.current) return;
+    pcRef.current.visible = start;
+  }, [start]);
+
+  useTick(() => {
+    if(!start) return;
+    dispatch({ type: 'update', width, height });
   });
 
-  return <Emitter />;
+  return (
+    <ParticleContainer ref={pcRef} maxSize={10}>
+      {flames.map((flame: FlameProps) => (
+        <Sprite
+          image={"/images/fire1.png"}
+          x={flame.x}
+          y={flame.y}
+          anchor={{x: 0.5, y: 0}}
+          scale={flame.scale}
+          alpha={flame.alpha}
+        />
+      ))}
+    </ParticleContainer>
+  );
 };
 
 export default Fire;

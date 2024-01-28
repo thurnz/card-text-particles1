@@ -1,36 +1,27 @@
 import { ButtonGroup, Button, Container } from "@mui/material";
 import CardStack from "./components/CardStack";
 import Fire from "./components/Fire";
+import Fps from "./components/Fps";
 import { useEffect, useState } from "react";
 import * as PIXI from "pixi.js";
 import { gsap } from "gsap";
 import { PixiPlugin } from "gsap/PixiPlugin";
+import { Stage } from "@pixi/react";
 
-type SCENES = 'cards' | 'text' | 'particles';
+type SCENES = "cards" | "text" | "particles";
 
 function App() {
-  const [size, setSize] = useState({width: 0, height: 0});
-  const [scene, setScene] = useState<SCENES>('cards');
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const [scene, setScene] = useState<SCENES>("particles");
 
   gsap.registerPlugin(PixiPlugin);
   PixiPlugin.registerPIXI(PIXI);
 
   useEffect(() => {
-    if(size.width !== window.innerWidth){
-      setSize({width: window.innerWidth, height: window.innerHeight});
+    if (size.width !== window.innerWidth) {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
     }
   }, [size]);
-
-  const getScene = () => {
-    switch(scene){
-      case 'text':
-        return <CardStack width={size.width} height={size.height} />;
-      case 'particles':
-        return <Fire width={size.width} height={size.height} />
-      default:
-        return <CardStack width={size.width} height={size.height} />;
-    }
-  };
 
   return (
     <Container
@@ -42,7 +33,19 @@ function App() {
         justifyContent: "center",
       }}
     >
-      {getScene()}
+      <Stage width={size.width} height={size.height}>
+        <CardStack
+          width={size.width}
+          height={size.height}
+          start={scene === "cards"}
+        />
+        <Fire
+          width={size.width}
+          height={size.height}
+          start={scene === "particles"}
+        />
+        <Fps />
+      </Stage>
       <ButtonGroup
         variant="contained"
         size="large"
@@ -54,9 +57,27 @@ function App() {
           alignItems: "center",
         }}
       >
-        <Button onClick={() => setScene('cards')}>CARDS</Button>
-        <Button onClick={() => setScene('text')}>TEXT</Button>
-        <Button onClick={() => setScene('particles')}>PARTICLES</Button>
+        <Button
+          onClick={() => {
+            setScene("cards");
+          }}
+        >
+          CARDS
+        </Button>
+        <Button
+          onClick={() => {
+            setScene("text");
+          }}
+        >
+          TEXT
+        </Button>
+        <Button
+          onClick={() => {
+            setScene("particles");
+          }}
+        >
+          PARTICLES
+        </Button>
       </ButtonGroup>
     </Container>
   );

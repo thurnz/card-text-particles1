@@ -1,5 +1,4 @@
-import { Stage, Container } from "@pixi/react";
-import Fps from "./Fps";
+import { Container } from "@pixi/react";
 import Card from "./Card";
 import { useEffect, useRef } from "react";
 import { Sprite } from "pixi.js";
@@ -8,18 +7,23 @@ import { gsap } from "gsap";
 export type CardStackProps = {
   width: number;
   height: number;
+  start: boolean;
 };
 
-const CardStack = ({ width, height }: CardStackProps) => {
+const CARD = {
+  WIDTH: 169,
+  HEIGHT: 240,
+};
+
+const CardStack = ({ width, height, start }: CardStackProps) => {
   const cardsRef = useRef<any | null>(null);
 
-  const setCards = () => {
+  const getCards = () => {
     const cards = [];
     const total = 144;
-    const w = 169;
-    const d = (width - w) / total;
+    const d = (width - CARD.WIDTH) / total;
     for (let i = 0; i < total; i++) {
-      cards.push(<Card key={i} x={w / 2 + d * i} y={150} />);
+      cards.push(<Card key={i} x={CARD.WIDTH / 2 + d * i} y={150} />);
     }
     return cards;
   };
@@ -27,8 +31,12 @@ const CardStack = ({ width, height }: CardStackProps) => {
   useEffect(() => {
     if (!cardsRef.current) return;
     const cards = cardsRef.current.children;
+
     const shuffle = () => {
+      const d = (width - CARD.WIDTH) / cards.length;
       cards.forEach((card: Sprite, index: number) => {
+        card.x = CARD.WIDTH / 2 + d * index;
+        card.y = 150;
         gsap.to(card, {
           delay: cards.length - index,
           duration: 2,
@@ -39,19 +47,21 @@ const CardStack = ({ width, height }: CardStackProps) => {
         });
       });
     };
-    shuffle();
+
+    if (start) {
+      shuffle();
+    } else {
+      gsap.killTweensOf(cards);
+    }
+
+    cardsRef.current.visible = start;
 
     return () => {
       gsap.killTweensOf(cards);
     };
-  });
+  }, [start, height, width]);
 
-  return (
-    <Stage width={width} height={height}>
-      <Container ref={cardsRef}>{setCards()}</Container>
-      <Fps />
-    </Stage>
-  );
+  return <Container ref={cardsRef}>{getCards()}</Container>;
 };
 
 export default CardStack;
